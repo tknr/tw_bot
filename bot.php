@@ -20,8 +20,7 @@ if ($bot->autoFollow() === false) {
 }
 if (! $bot->replyMension()) {
     exit(1);
-}
-if (! $bot->postRandom()) {
+} elseif (! $bot->postRandom()) {
     exit(1);
 }
 exit(0);
