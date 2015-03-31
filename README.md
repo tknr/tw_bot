@@ -1,2 +1,2 @@
 # tw_bot
-twitter bot
+tweet bot

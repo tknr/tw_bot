@@ -1,0 +1,7 @@
+{
+    "require":{
+        "php":">=5.4.0",
+        "abraham/twitteroauth":"0.5.2",
+        "apache/log4php":"2.3.0"
+    }
+}

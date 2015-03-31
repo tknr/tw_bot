@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration xmlns="http://logging.apache.org/log4php/">
+	
+	<appender name="daily" class="LoggerAppenderDailyFile">
+		<param name="File" value="./log/bot_%s.log" />
+		<param name="DatePattern" value="Ymd" />
+		<layout class="LoggerLayoutPattern">
+			<param name="ConversionPattern" value="%d{Y-m-d H:i:s.u} [%-5p] %C.%M(%F:%L) %msg%n" />
+		</layout>
+	</appender>
+
+	<logger name="default">
+		<level value="warn" />
+		<appender_ref ref="daily" />
+	</logger>
+
+	<root>
+		<level value="trace" />
+		<appender_ref ref="daily" />
+	</root>
+
+</configuration>
