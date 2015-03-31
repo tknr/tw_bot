@@ -24,42 +24,54 @@ class TwitterBot
 
     /**
      *
+     * @var Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object>
+     */
+    private $followers;
+
+    /**
+     *
+     * @var Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object>
+     */
+    private $friends;
+
+    /**
+     *
+     * @var array
+     */
+    private $screen_name_array;
+
+    /**
+     *
+     * @var boolean
+     */
+    private $is_verifyed;
+
+    /**
+     *
      * @param string $consumer_key            
      * @param string $consumer_secret            
      * @param string $access_token            
      * @param string $access_secret            
-     * @param boolean $autoFollowBack            
      */
-    function __construct($consumer_key, $consumer_secret, $access_token, $access_secret, $autoFollowBack = true)
+    function __construct($consumer_key, $consumer_secret, $access_token, $access_secret)
     {
         $this->tw = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_secret);
-        $this->autoFollowBack = $autoFollowBack;
         $this->logger = Logger::getLogger('default');
+        $this->is_verifyed = false;
+        $this->init();
     }
 
     /**
-     *
-     * @return boolean
      */
-    public function exec()
+    private function init()
     {
-        if (! $this->verifyAccount()) {
-            return false;
+        $this->is_verifyed = $this->verifyAccount();
+        if (! $this->is_verifyed) {
+            return;
         }
-        
-        $followers = $this->getFollowers();
-        $friends = $this->getFriends();
-        $screen_name_array = $this->getScreenNameArray($friends);
-        if ($this->autoFollowBack) {
-            $this->autoFollow($followers, $friends);
-        }
-        if ($this->replyMension($screen_name_array)) {
-            return true;
-        }
-        if ($this->postRandom($friends, $screen_name_array)) {
-            return true;
-        }
-        return false;
+        $this->followers = $this->getFollowers();
+        $this->friends = $this->getFriends();
+        $this->screen_name_array = $this->getScreenNameArray($this->friends);
     }
 
     /**
@@ -106,43 +118,50 @@ class TwitterBot
         return $friends;
     }
 
+
     /**
-     *
-     * @param
-     *            Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object> $followers
-     * @param
-     *            Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object> $friends
+     * @param number $max_error_count
+     * @return boolean|number
      */
-    private function autoFollow($followers, $friends, $max_error_count = 5)
+    public function autoFollow($max_error_count = 5)
     {
+        if (! $this->isVerifyed()) {
+            return false;
+        }
         $count_error = 0;
+        $count_follow = 0;
         // Twitter API v1.1 で自動フォロー返し機能を実装する : プログラミング for ツイッタラー http://twitterer.blog.jp/archives/1482724.html
-        foreach ($followers->ids as $index => $id) {
-            if (empty($friends->ids) or ! in_array($id, $friends->ids)) {
+        foreach ($this->followers->ids as $index => $id) {
+            if (empty($this->friends->ids) or ! in_array($id, $this->friends->ids)) {
                 $followed = $this->tw->post('friendships/create', array(
                     'user_id' => $id
                 ));
                 if (isset($followed->errors)) {
                     $this->logger->error($followed);
                     if ($followed->errors[0]->code == 161) {
-                        return;
+                        return $count_follow;
                     }
+                    $count_error ++;
+                    if ($count_error >= $max_error_count) {
+                        break;
+                    }
+                    continue;
                 }
-                $count_error ++;
-                if ($count_error >= $max_error_count) {
-                    break;
-                }
+                $count_follow ++;
             }
         }
+        return $count_follow;
     }
 
     /**
      *
-     * @param array $screen_name_array            
      * @return boolean
      */
-    private function replyMension($screen_name_array)
+    public function replyMension()
     {
+        if (! $this->isVerifyed()) {
+            return false;
+        }
         $_option = array(
             'count' => 1
         );
@@ -159,10 +178,10 @@ class TwitterBot
         if (isset($mentions[0])) {
             $mension = $mentions[0];
             $this->logger->trace($mension);
-            $text = TweetTextReader::getReplyPattern(JSON_REPLY_PATTERN, $mension, $screen_name_array);
+            $text = TweetTextReader::getReplyPattern(JSON_REPLY_PATTERN, $mension, $this->screen_name_array);
             $this->logger->trace($text);
             if ($text == null) {
-                $text = TweetTextReader::getReplyRandomLine(FILE_REPLY_RANDOM, $mension, $screen_name_array);
+                $text = TweetTextReader::getReplyRandomLine(FILE_REPLY_RANDOM, $mension, $this->screen_name_array);
                 $this->logger->trace($text);
                 if (is_null($text)) {
                     $this->logger->error('text is blank');
@@ -186,19 +205,19 @@ class TwitterBot
             }
             return true;
         }
-        return false;
+        return true;
     }
 
     /**
      *
-     * @param
-     *            Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object> $friends
-     * @param array $screen_name_array            
      * @return boolean
      */
-    private function postRandom($friends, $screen_name_array)
+    public function postRandom()
     {
-        $text = TweetTextReader::getPostRandomLine(FILE_POST_RANDOM, $screen_name_array);
+        if (! $this->isVerifyed()) {
+            return false;
+        }
+        $text = TweetTextReader::getPostRandomLine(FILE_POST_RANDOM, $this->screen_name_array);
         
         $this->logger->trace($text);
         if (is_null($text)) {
@@ -218,18 +237,16 @@ class TwitterBot
 
     /**
      *
-     * @param
-     *            Ambigous <\Abraham\TwitterOAuth\array, \Abraham\TwitterOAuth\object> $friends
      * @return Ambigous <multitype:string , multitype:NULL >
      */
-    private function getScreenNameArray($friends)
+    private function getScreenNameArray()
     {
         $screen_name_array = array();
         {
             $screen_name_count = 0;
-            if (! empty($friends->ids)) {
-
-                $rand_user_ids = array_rand($friends->ids, count($friends->ids));
+            if (! empty($this->friends->ids)) {
+                
+                $rand_user_ids = array_rand($this->friends->ids, count($this->friends->ids));
                 srand(time());
                 shuffle($rand_user_ids);
                 // $logger->trace($rand_user_ids);
@@ -264,5 +281,14 @@ class TwitterBot
             );
         }
         return $screen_name_array;
+    }
+
+    /**
+     *
+     * @return boolean
+     */
+    public function isVerifyed()
+    {
+        return $this->is_verifyed;
     }
 }
