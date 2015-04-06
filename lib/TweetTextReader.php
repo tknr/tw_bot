@@ -18,6 +18,7 @@ class TweetTextReader
         }
         // @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
         $text_array = file($filename);
+        $text_array = array_values(array_filter($text_array));
         srand(time());
         shuffle($text_array);
         $text = $text_array[0];
@@ -101,6 +102,7 @@ class TweetTextReader
         }
         // @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
         $text_array = file($filename);
+        $text_array = array_values(array_filter($text_array));
         srand(time());
         shuffle($text_array);
         $text = $text_array[0];
