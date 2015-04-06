@@ -41,7 +41,7 @@ class TweetTextReader
         srand(microtime() * 1000000);
         
         $src = str_replace('{rand}', rand(0, 100), $src);
-        $src = preg_replace_callback("\{rand(\d+)\-(\d+)\}", function ($matches) {
+        $src = preg_replace_callback("/\{rand(\d+)\-(\d+)\}/", function ($matches) {
             return rand($matches[1], $matches[2]);
         }, $src);
         return $src;
