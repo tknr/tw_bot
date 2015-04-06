@@ -7,11 +7,10 @@ class TweetTextReader
 
     /**
      *
-     * @param string $filename
-     *            @array $screen_name_array
-     * @return string | NULL
+     * @param string $filename            
+     * @return NULL|string
      */
-    public static function getPostRandomLine($filename, $screen_name_array)
+    private static function getRandomLineFromTextFile($filename)
     {
         if (! file_exists($filename)) {
             return null;
@@ -25,7 +24,7 @@ class TweetTextReader
         if (empty($text)) {
             return null;
         }
-        return self::replacePostRandomLine($text, $screen_name_array);
+        return $text;
     }
 
     /**
@@ -46,6 +45,21 @@ class TweetTextReader
             return rand($matches[1], $matches[2]);
         }, $src);
         return $src;
+    }
+
+    /**
+     *
+     * @param string $filename
+     *            @array $screen_name_array
+     * @return string | NULL
+     */
+    public static function getPostRandomLine($filename, $screen_name_array)
+    {
+        $text = self::getRandomLineFromTextFile($filename);
+        if ($text == null) {
+            return null;
+        }
+        return self::replacePostRandomLine($text, $screen_name_array);
     }
 
     /**
@@ -97,16 +111,8 @@ class TweetTextReader
      */
     public static function getReplyRandomLine($filename, $mension, $screen_name_array)
     {
-        if (! file_exists($filename)) {
-            return null;
-        }
-        // @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
-        $text_array = file($filename);
-        $text_array = array_values(array_filter($text_array));
-        srand(time());
-        shuffle($text_array);
-        $text = $text_array[0];
-        if (empty($text)) {
+        $text = self::getRandomLineFromTextFile($filename);
+        if ($text == null) {
             return null;
         }
         return '@' . $mension->user->screen_name . ' ' . self::replaceReplyRandomLine($text, $mension, $screen_name_array);

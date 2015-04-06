@@ -118,9 +118,9 @@ class TwitterBot
         return $friends;
     }
 
-
     /**
-     * @param number $max_error_count
+     *
+     * @param number $max_error_count            
      * @return boolean|number
      */
     public function autoFollow($max_error_count = 5)
