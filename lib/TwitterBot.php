@@ -244,9 +244,9 @@ class TwitterBot
         $screen_name_array = array();
         {
             $screen_name_count = 0;
-            if (! empty($this->friends->ids)) {
+            if (! empty($this->followers->ids)) {
                 
-                $rand_user_ids = array_rand($this->friends->ids, count($this->friends->ids));
+                $rand_user_ids = array_rand($this->followers->ids, count($this->followers->ids));
                 srand(time());
                 shuffle($rand_user_ids);
                 // $logger->trace($rand_user_ids);
