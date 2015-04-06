@@ -30,6 +30,23 @@ class TweetTextReader
     /**
      *
      * @param string $src            
+     * @return string
+     */
+    private static function replaceBase($src)
+    {
+        $src = str_replace('{hour}', intval(date('H')), $src);
+        $src = str_replace('{minute}', intval(date('i')), $src);
+        $src = str_replace('{second}', intval(date('s')), $src);
+        
+        srand(microtime() * 1000000);
+        
+        $src = str_replace('{rand}', rand(0, 100), $src);
+        return $src;
+    }
+
+    /**
+     *
+     * @param string $src            
      * @param array $screen_name_array            
      * @return string
      */
@@ -38,9 +55,7 @@ class TweetTextReader
         foreach ($screen_name_array as $index => $screen_name) {
             $src = str_replace('{id' . $index . '}', '@' . $screen_name, $src);
         }
-        $src = str_replace('{hour}', intval(date('H')), $src);
-        $src = str_replace('{minute}', intval(date('i')), $src);
-        $src = str_replace('{second}', intval(date('s')), $src);
+        $src = self::replaceBase($src);
         return $src;
     }
 
@@ -104,9 +119,7 @@ class TweetTextReader
         $src = str_replace('{id0}', '@' . $mension->user->screen_name, $src);
         $src = str_replace('{id1}', '@' . $screen_name_array[0], $src);
         
-        $src = str_replace('{hour}', intval(date('H')), $src);
-        $src = str_replace('{minute}', intval(date('i')), $src);
-        $src = str_replace('{second}', intval(date('s')), $src);
+        $src = self::replaceBase($src);
         return $src;
     }
 
