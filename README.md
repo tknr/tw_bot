@@ -23,7 +23,16 @@ folder : data/
 
 reply_pattern.json : reply words for mension which matches some specific word regex  
 reply_random.txt : reply setting for mension ,if any specific word isn't in the mension  
-post_random.txt : post setting if there aren't any new mention  
+post_random.txt : post setting if there aren't any new mention 
+
+##### regex
+{id0} : screen_name at random in follower ( in post_random.txt ) | tweeter oof mention ( in reply_pattern.json , reply_random.txt )
+{id1} : screen_name at random in follower
+{hour} : hour ( of 24-hour clock )
+{minute} : minute
+{second} : second
+{rand} : random number in 0..100
+{rand<numeric x>-<numeric y>} random number in x..y ex. {rand1..10}
 
 #### logging
 file : config/log4php.xml  
