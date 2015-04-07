@@ -64,6 +64,18 @@ class TweetTextReader
 
     /**
      *
+     * @param array $text_array            
+     * @return string
+     */
+    private function getRandomTextFromArray($text_array)
+    {
+        $text_array = array_values(array_filter($text_array));
+        $text = $text_array[array_rand($text_array)];
+        return $text;
+    }
+
+    /**
+     *
      * @param string $filename            
      * @return NULL|string
      * @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
@@ -74,13 +86,7 @@ class TweetTextReader
             return null;
         }
         $text_array = file($filename);
-        $text_array = array_values(array_filter($text_array));
-        
-        $text = $text_array[array_rand($text_array)];
-        if (empty($text)) {
-            return null;
-        }
-        return $text;
+        return $this->getRandomTextFromArray($text_array);
     }
 
     /**
@@ -157,9 +163,7 @@ class TweetTextReader
         foreach ($json['reply_pattern'] as $reply_pattern) {
             if (preg_match('/' . $reply_pattern['regex'] . '/', $mension->text) === 1) {
                 $reply_array = $reply_pattern['reply'];
-                $reply_array = array_values(array_filter($reply_array));
-                
-                $text = $reply_array[array_rand($reply_array)];
+                $text = $this->getRandomTextFromArray($reply_array);
                 return $this->replace($text, $screen_name_array);
             }
         }
