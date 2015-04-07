@@ -17,7 +17,7 @@ foreach ($config['file'] as $key => $file) {
 }
 print_r($config);
 
-$bot = new TwitterBot(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET);
+$bot = new TwitterBot($config);
 if (! $bot->isVerifyed()) {
     exit(1);
 }

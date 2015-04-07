@@ -6,6 +6,12 @@ class TwitterBot
 
     /**
      *
+     * @var array
+     */
+    private $config;
+
+    /**
+     *
      * @var TwitterOAuth
      */
     private $tw;
@@ -48,15 +54,13 @@ class TwitterBot
 
     /**
      *
-     * @param string $consumer_key            
-     * @param string $consumer_secret            
-     * @param string $access_token            
-     * @param string $access_secret            
+     * @param array $config            
      */
-    function __construct($consumer_key, $consumer_secret, $access_token, $access_secret)
+    function __construct($config)
     {
         srand(time());
-        $this->tw = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_secret);
+        $this->config = $config;
+        $this->tw = new TwitterOAuth($this->config['twitter']['CONSUMER_KEY'], $this->config['twitter']['CONSUMER_SECRET'], $this->config['twitter']['ACCESS_TOKEN'], $this->config['twitter']['ACCESS_SECRET']);
         $this->logger = Logger::getLogger('default');
         $this->is_verifyed = false;
         $this->init();
@@ -172,7 +176,7 @@ class TwitterBot
         $_option = array(
             'count' => 1
         );
-        $last_mension_id = TweetTextReader::getInstance()->getLastMensionId(FILE_LAST_MENSION_ID);
+        $last_mension_id = TweetTextReader::getInstance()->getLastMensionId($this->config['file']['LAST_MENSION_ID']);
         if ($last_mension_id != null) {
             $_option['since_id'] = $last_mension_id;
         }
@@ -185,10 +189,10 @@ class TwitterBot
         if (isset($mentions[0])) {
             $mension = $mentions[0];
             $this->logger->trace($mension);
-            $text = TweetTextReader::getInstance()->getReplyPattern(JSON_REPLY_PATTERN, $mension, $this->screen_name_array);
+            $text = TweetTextReader::getInstance()->getReplyPattern($this->config['file']['JSON_REPLY_PATTERN'], $mension, $this->screen_name_array);
             $this->logger->trace($text);
             if ($text == null) {
-                $text = TweetTextReader::getInstance()->getReplyRandomLine(FILE_REPLY_RANDOM, $mension, $this->screen_name_array);
+                $text = TweetTextReader::getInstance()->getReplyRandomLine($this->config['file']['REPLY_RANDOM'], $mension, $this->screen_name_array);
                 $this->logger->trace($text);
                 if (is_null($text)) {
                     $this->logger->error('text is blank');
@@ -206,7 +210,7 @@ class TwitterBot
                 return false;
             }
             $this->logger->trace('id_str:' . $statuses->id_str);
-            if (TweetTextReader::getInstance()->saveLastMensionId(FILE_LAST_MENSION_ID, $last_mension_id) === FALSE) {
+            if (TweetTextReader::getInstance()->saveLastMensionId($this->config['file']['LAST_MENSION_ID'], $last_mension_id) === FALSE) {
                 $this->logger->error('saveLastMensionId failed:' . $last_mension_id);
                 return false;
             }
@@ -224,7 +228,7 @@ class TwitterBot
         if (! $this->isVerifyed()) {
             return false;
         }
-        $text = TweetTextReader::getInstance()->getPostRandomLine(FILE_POST_RANDOM, $this->screen_name_array);
+        $text = TweetTextReader::getInstance()->getPostRandomLine($this->config['file']['POST_RANDOM'], $this->screen_name_array);
         
         $this->logger->trace($text);
         if (is_null($text)) {
@@ -284,7 +288,7 @@ class TwitterBot
         }
         $this->logger->trace($screen_name_array);
         if (count($screen_name_array) < 1) {
-            $this->logger->warn('cannot get screen_name array');
+            $this->logger->warn('could not get screen_name array');
             $screen_name_array = array(
                 '',
                 ''
