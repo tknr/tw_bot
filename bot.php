@@ -4,6 +4,9 @@ ini_set('timezone', 'Asia/Tokyo');
 error_reporting(E_ALL);
 setlocale(LC_ALL, 'ja_JP.UTF-8');
 
+$config = parse_ini_file(__DIR__ . '/config/config.ini', true);
+print_r($config);
+
 require_once (__DIR__ . '/config/config.php');
 require_once (__DIR__ . '/vendor/autoload.php');
 require_once (__DIR__ . '/lib/TweetTextReader.php');
