@@ -15,7 +15,6 @@ $config = parse_ini_file(__DIR__ . '/config/config.ini', true);
 foreach ($config['file'] as $key => $file) {
     $config['file'][$key] = __DIR__ . $file;
 }
-print_r($config);
 
 $bot = new TwitterBot($config);
 if (! $bot->isVerifyed()) {

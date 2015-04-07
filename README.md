@@ -5,7 +5,7 @@ tweet bot
 
 ### configure
 #### twitter authentication
-file : config/config.php  
+file : config/config.ini  
 
 set these value:  
 
@@ -56,6 +56,3 @@ ref : [Composer](https://getcomposer.org/)
 [TwitterOAuth PHP Library for the Twitter REST API](https://twitteroauth.com/)  
 [50 行でできる簡単 & 安全な自動フォロー返し機能の実装方法 : プログラミング for ツイッタラー](http://twitterer.blog.jp/archives/1486582.html)
 [PHP - TwitterOAuthの正しい使い方 - Qiita](http://qiita.com/rana_kualu/items/357a031c0453a3538ad3)
-
-## todo
-change config.php to config.ini and read with parse_ini_file()  
