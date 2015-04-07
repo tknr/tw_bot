@@ -76,7 +76,7 @@ class TweetTextReader
         $text_array = file($filename);
         $text_array = array_values(array_filter($text_array));
         
-        $text = array_rand($text_array);
+        $text = $text_array[array_rand($text_array)];
         if (empty($text)) {
             return null;
         }
@@ -159,7 +159,7 @@ class TweetTextReader
                 $reply_array = $reply_pattern['reply'];
                 $reply_array = array_values(array_filter($reply_array));
                 
-                $text = array_rand($reply_array);
+                $text = $reply_array[array_rand($reply_array)];
                 return $this->replace($text, $screen_name_array);
             }
         }
