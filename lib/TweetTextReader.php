@@ -116,11 +116,11 @@ class TweetTextReader
      */
     public function getPostRandomLine($filename, $screen_name_array)
     {
-        $text = self::getRandomLineFromTextFile($filename);
+        $text = $this->getRandomLineFromTextFile($filename);
         if ($text == null) {
             return null;
         }
-        return self::replace($text, $screen_name_array);
+        return $this->replace($text, $screen_name_array);
     }
 
     /**
@@ -132,7 +132,7 @@ class TweetTextReader
      */
     public function getReplyRandomLine($filename, $mension, $screen_name_array)
     {
-        $text = self::getRandomLineFromTextFile($filename);
+        $text = $this->getRandomLineFromTextFile($filename);
         if ($text == null) {
             return null;
         }
@@ -160,7 +160,7 @@ class TweetTextReader
                 $reply_array = array_values(array_filter($reply_array));
                 
                 $text = array_rand($reply_array);
-                return self::replace($text, $screen_name_array);
+                return $this->replace($text, $screen_name_array);
             }
         }
         return null;
