@@ -55,6 +55,7 @@ class TwitterBot
      */
     function __construct($consumer_key, $consumer_secret, $access_token, $access_secret)
     {
+        srand(time());
         $this->tw = new TwitterOAuth($consumer_key, $consumer_secret, $access_token, $access_secret);
         $this->logger = Logger::getLogger('default');
         $this->is_verifyed = false;
@@ -98,6 +99,9 @@ class TwitterBot
      */
     private function getFollowers()
     {
+        if (! $this->isVerifyed()) {
+            return false;
+        }
         $followers = $this->tw->get('followers/ids', array(
             'cursor' => - 1
         ));
@@ -111,6 +115,9 @@ class TwitterBot
      */
     private function getFriends()
     {
+        if (! $this->isVerifyed()) {
+            return false;
+        }
         $friends = $this->tw->get('friends/ids', array(
             'cursor' => - 1
         ));
@@ -122,6 +129,7 @@ class TwitterBot
      *
      * @param number $max_error_count            
      * @return boolean|number
+     * @see Twitter API v1.1 で自動フォロー返し機能を実装する : プログラミング for ツイッタラー http://twitterer.blog.jp/archives/1482724.html
      */
     public function autoFollow($max_error_count = 5)
     {
@@ -130,7 +138,6 @@ class TwitterBot
         }
         $count_error = 0;
         $count_follow = 0;
-        // Twitter API v1.1 で自動フォロー返し機能を実装する : プログラミング for ツイッタラー http://twitterer.blog.jp/archives/1482724.html
         foreach ($this->followers->ids as $index => $id) {
             if (empty($this->friends->ids) or ! in_array($id, $this->friends->ids)) {
                 $followed = $this->tw->post('friendships/create', array(
@@ -165,7 +172,7 @@ class TwitterBot
         $_option = array(
             'count' => 1
         );
-        $last_mension_id = TweetTextReader::getLastMensionId(FILE_LAST_MENSION_ID);
+        $last_mension_id = TweetTextReader::getInstance()->getLastMensionId(FILE_LAST_MENSION_ID);
         if ($last_mension_id != null) {
             $_option['since_id'] = $last_mension_id;
         }
@@ -178,10 +185,10 @@ class TwitterBot
         if (isset($mentions[0])) {
             $mension = $mentions[0];
             $this->logger->trace($mension);
-            $text = TweetTextReader::getReplyPattern(JSON_REPLY_PATTERN, $mension, $this->screen_name_array);
+            $text = TweetTextReader::getInstance()->getReplyPattern(JSON_REPLY_PATTERN, $mension, $this->screen_name_array);
             $this->logger->trace($text);
             if ($text == null) {
-                $text = TweetTextReader::getReplyRandomLine(FILE_REPLY_RANDOM, $mension, $this->screen_name_array);
+                $text = TweetTextReader::getInstance()->getReplyRandomLine(FILE_REPLY_RANDOM, $mension, $this->screen_name_array);
                 $this->logger->trace($text);
                 if (is_null($text)) {
                     $this->logger->error('text is blank');
@@ -199,7 +206,7 @@ class TwitterBot
                 return false;
             }
             $this->logger->trace('id_str:' . $statuses->id_str);
-            if (TweetTextReader::saveLastMensionId(FILE_LAST_MENSION_ID, $last_mension_id) === FALSE) {
+            if (TweetTextReader::getInstance()->saveLastMensionId(FILE_LAST_MENSION_ID, $last_mension_id) === FALSE) {
                 $this->logger->error('saveLastMensionId failed:' . $last_mension_id);
                 return false;
             }
@@ -217,7 +224,7 @@ class TwitterBot
         if (! $this->isVerifyed()) {
             return false;
         }
-        $text = TweetTextReader::getPostRandomLine(FILE_POST_RANDOM, $this->screen_name_array);
+        $text = TweetTextReader::getInstance()->getPostRandomLine(FILE_POST_RANDOM, $this->screen_name_array);
         
         $this->logger->trace($text);
         if (is_null($text)) {
@@ -241,13 +248,16 @@ class TwitterBot
      */
     private function getScreenNameArray()
     {
+        if (! $this->isVerifyed()) {
+            return false;
+        }
         $screen_name_array = array();
         {
             $screen_name_count = 0;
             if (! empty($this->followers->ids)) {
                 
                 $rand_user_ids = array_rand($this->followers->ids, count($this->followers->ids));
-                srand(time());
+                
                 shuffle($rand_user_ids);
                 // $logger->trace($rand_user_ids);
                 foreach ($rand_user_ids as $index => $user_id) {

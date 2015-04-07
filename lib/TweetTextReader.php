@@ -7,38 +7,53 @@ class TweetTextReader
 
     /**
      *
-     * @param string $filename            
-     * @return NULL|string
+     * @var TweetTextReader
      */
-    private static function getRandomLineFromTextFile($filename)
+    private static $_instance;
+
+    /**
+     * Singleton pattern
+     *
+     * @return TweetTextReader
+     * @see http://www.doyouphp.jp/phpdp/phpdp_02-1-2_singleton.shtml
+     */
+    public static function getInstance()
     {
-        if (! file_exists($filename)) {
-            return null;
+        if (! isset(self::$_instance)) {
+            self::$_instance = new TweetTextReader();
         }
-        // @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
-        $text_array = file($filename);
-        $text_array = array_values(array_filter($text_array));
+        
+        return self::$_instance;
+    }
+
+    /**
+     */
+    function __construct()
+    {
         srand(time());
-        shuffle($text_array);
-        $text = $text_array[0];
-        if (empty($text)) {
-            return null;
-        }
-        return $text;
     }
 
     /**
      *
      * @param string $src            
+     * @param array $screen_name_array            
+     * @param object $mension            
      * @return string
      */
-    private static function replaceBase($src)
+    private function replace($src, $screen_name_array, $mension = null)
     {
+        if ($mension != null) {
+            $src = str_replace('{reply_to}', '@' . $mension->user->screen_name, $src);
+        } else {
+            $src = str_replace('{reply_to}', '@' . $screen_name_array[0], $src);
+        }
+        foreach ($screen_name_array as $index => $screen_name) {
+            $src = str_replace('{id' . $index . '}', '@' . $screen_name, $src);
+        }
+        
         $src = str_replace('{hour}', intval(date('H')), $src);
         $src = str_replace('{minute}', intval(date('i')), $src);
         $src = str_replace('{second}', intval(date('s')), $src);
-        
-        srand(microtime() * 1000000);
         
         $src = str_replace('{rand}', rand(0, 100), $src);
         $src = preg_replace_callback("/\{rand(\d+)\-(\d+)\}/", function ($matches) {
@@ -49,32 +64,23 @@ class TweetTextReader
 
     /**
      *
-     * @param string $filename
-     *            @array $screen_name_array
-     * @return string | NULL
+     * @param string $filename            
+     * @return NULL|string
+     * @see ファイル内行のランダム表示 http://lcl.web5.jp/prog/fileline.php
      */
-    public static function getPostRandomLine($filename, $screen_name_array)
+    private function getRandomLineFromTextFile($filename)
     {
-        $text = self::getRandomLineFromTextFile($filename);
-        if ($text == null) {
+        if (! file_exists($filename)) {
             return null;
         }
-        return self::replacePostRandomLine($text, $screen_name_array);
-    }
-
-    /**
-     *
-     * @param string $src            
-     * @param array $screen_name_array            
-     * @return string
-     */
-    private static function replacePostRandomLine($src, $screen_name_array)
-    {
-        foreach ($screen_name_array as $index => $screen_name) {
-            $src = str_replace('{id' . $index . '}', '@' . $screen_name, $src);
+        $text_array = file($filename);
+        $text_array = array_values(array_filter($text_array));
+        
+        $text = array_rand($text_array);
+        if (empty($text)) {
+            return null;
         }
-        $src = self::replaceBase($src);
-        return $src;
+        return $text;
     }
 
     /**
@@ -82,7 +88,7 @@ class TweetTextReader
      * @param string $filename            
      * @return NULL | string
      */
-    public static function getLastMensionId($filename)
+    public function getLastMensionId($filename)
     {
         if (! file_exists($filename)) {
             return null;
@@ -97,9 +103,24 @@ class TweetTextReader
      * @param string $mensionId            
      * @return Ambigous <boolean, number>
      */
-    public static function saveLastMensionId($filename, $mensionId)
+    public function saveLastMensionId($filename, $mensionId)
     {
         return file_put_contents($filename, $mensionId);
+    }
+
+    /**
+     *
+     * @param string $filename            
+     * @param array $screen_name_array            
+     * @return string | NULL
+     */
+    public function getPostRandomLine($filename, $screen_name_array)
+    {
+        $text = self::getRandomLineFromTextFile($filename);
+        if ($text == null) {
+            return null;
+        }
+        return self::replace($text, $screen_name_array);
     }
 
     /**
@@ -109,29 +130,13 @@ class TweetTextReader
      * @param array $screen_name_array            
      * @return string | NULL
      */
-    public static function getReplyRandomLine($filename, $mension, $screen_name_array)
+    public function getReplyRandomLine($filename, $mension, $screen_name_array)
     {
         $text = self::getRandomLineFromTextFile($filename);
         if ($text == null) {
             return null;
         }
-        return '@' . $mension->user->screen_name . ' ' . self::replaceReplyRandomLine($text, $mension, $screen_name_array);
-    }
-
-    /**
-     *
-     * @param string $src            
-     * @param object $mension            
-     * @param array $screen_name_array            
-     * @return string
-     */
-    private static function replaceReplyRandomLine($src, $mension, $screen_name_array)
-    {
-        $src = str_replace('{id0}', '@' . $mension->user->screen_name, $src);
-        $src = str_replace('{id1}', '@' . $screen_name_array[0], $src);
-        
-        $src = self::replaceBase($src);
-        return $src;
+        return '@' . $mension->user->screen_name . ' ' . self::replace($text, $screen_name_array, $mension);
     }
 
     /**
@@ -141,7 +146,7 @@ class TweetTextReader
      * @param array $screen_name_array            
      * @return NULL|string
      */
-    public static function getReplyPattern($json_filename, $mension, $screen_name_array)
+    public function getReplyPattern($json_filename, $mension, $screen_name_array)
     {
         if (! file_exists($json_filename)) {
             return null;
@@ -149,12 +154,13 @@ class TweetTextReader
         $json = json_decode($json_filename, true);
         $logger = Logger::getLogger('default');
         $logger->trace($json);
-        foreach ($json['reply_pattern'] as $index => $reply_pattern) {
+        foreach ($json['reply_pattern'] as $reply_pattern) {
             if (preg_match('/' . $reply_pattern['regex'] . '/', $mension->text) === 1) {
                 $reply_array = $reply_pattern['reply'];
-                srand(time());
-                shuffle($reply_array);
-                return self::replacePostRandomLine($reply_array[0], $screen_name_array);
+                $reply_array = array_values(array_filter($reply_array));
+                
+                $text = array_rand($reply_array);
+                return self::replace($text, $screen_name_array);
             }
         }
         return null;

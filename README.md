@@ -26,13 +26,14 @@ reply_random.txt : reply setting for mension ,if any specific word isn't in the 
 post_random.txt : post setting if there aren't any new mention 
 
 ##### regex
-{id0} : screen_name at random in follower ( in post_random.txt ) | tweeter oof mention ( in reply_pattern.json , reply_random.txt )
+{reply_to} : screen_name of mention ( in reply_pattern.json , reply_random.txt )
+{id0} : screen_name at random in follower
 {id1} : screen_name at random in follower
 {hour} : hour ( of 24-hour clock )
 {minute} : minute
 {second} : second
 {rand} : random number in 0..100
-{rand<numeric x>-<numeric y>} random number in x..y ex. {rand1..10}
+{rand<numeric x>-<numeric y>} random number in x..y ex. {rand1..108}
 
 #### logging
 file : config/log4php.xml  
@@ -56,4 +57,5 @@ ref : [Composer](https://getcomposer.org/)
 [50 行でできる簡単 & 安全な自動フォロー返し機能の実装方法 : プログラミング for ツイッタラー](http://twitterer.blog.jp/archives/1486582.html)
 [PHP - TwitterOAuthの正しい使い方 - Qiita](http://qiita.com/rana_kualu/items/357a031c0453a3538ad3)
 
-
+## todo
+change config.php to config.ini and read with parse_ini_file()  

@@ -1,4 +1,7 @@
 #!/bin/sh
+mkdir -p log
+chmod -R 777 log
+
 rm -f composer.lock
 rm -Rf output
 rm -Rf vendor
