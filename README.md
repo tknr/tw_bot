@@ -26,22 +26,25 @@ reply_random.txt : reply setting for mension ,if any specific word isn't in the 
 post_random.txt : post setting if there aren't any new mention 
 
 ##### regex
-{reply_to} : screen_name of mention ( in reply_pattern.json , reply_random.txt )
-{id0} : screen_name at random in follower
-{id1} : screen_name at random in follower
-{hour} : hour ( of 24-hour clock )
-{minute} : minute
-{second} : second
-{rand} : random number in 0..100
-{rand<numeric x>-<numeric y>} random number in x..y ex. {rand1..108}
+{reply_to} : screen_name of mention ( in reply_pattern.json , reply_random.txt )  
+{id0} : screen_name at random in follower  
+{id1} : screen_name at random in follower  
+
+###### regex with TweetTextReplacer
+{hour} : hour ( of 24-hour clock )  
+{minute} : minute  
+{second} : second  
+{rand} : random number in 0..100  
+{rand<numeric x>-<numeric y>} : random number in x..y ex. {rand1..108}  
+{hour_to_<numeric x>} : distance of hours from now to x . ex. {hour_to_5}  
 
 #### logging
 file : config/log4php.xml  
 see the reference :  
-[Apache log4php - Loggers - Apache log4php](https://logging.apache.org/log4php/docs/loggers.html)
+[Apache log4php - Loggers - Apache log4php](https://logging.apache.org/log4php/docs/loggers.html)  
 
 ### execute
-bash bot.sh
+bash bot.sh  
 
 ### update/upgrade library
 execute  

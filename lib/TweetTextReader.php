@@ -50,15 +50,7 @@ class TweetTextReader
         foreach ($screen_name_array as $index => $screen_name) {
             $src = str_replace('{id' . $index . '}', '@' . $screen_name, $src);
         }
-        
-        $src = str_replace('{hour}', intval(date('H')), $src);
-        $src = str_replace('{minute}', intval(date('i')), $src);
-        $src = str_replace('{second}', intval(date('s')), $src);
-        
-        $src = str_replace('{rand}', rand(0, 100), $src);
-        $src = preg_replace_callback("/\{rand(\d+)\-(\d+)\}/", function ($matches) {
-            return rand($matches[1], $matches[2]);
-        }, $src);
+        $src = TweetTextReplacer::getInstance()->replace($src);
         return $src;
     }
 
